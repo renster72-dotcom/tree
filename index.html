@@ -1,0 +1,96 @@
+
+import React, { useState, useEffect } from "react";
+
+const PATHS = [
+  {id:11, name:"The Fool", text:"Step into infinite potential and trust the unknown."},
+  {id:12, name:"The Magician", text:"Focus your will and channel creative power."},
+  {id:13, name:"The High Priestess", text:"Enter silence and awaken inner knowing."},
+  {id:14, name:"The Empress", text:"Feel growth, beauty, and living abundance."}
+];
+
+export default function App(){
+  const [selected, setSelected] = useState(null);
+  const [time, setTime] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [ritual, setRitual] = useState(false);
+  const [ambient, setAmbient] = useState(null);
+
+  useEffect(()=>{
+    let t;
+    if(running){
+      t=setInterval(()=>setTime(v=>v+1),1000);
+    }
+    return ()=>clearInterval(t);
+  },[running]);
+
+  const speak = (text)=>{
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9;
+    speechSynthesis.speak(u);
+  };
+
+  const startAmbient = ()=>{
+    const a = new Audio("/audio/ambient.mp3");
+    a.loop = true;
+    a.volume = 0.3;
+    a.play();
+    setAmbient(a);
+  };
+
+  const stopAmbient = ()=>{
+    if(ambient){
+      ambient.pause();
+      setAmbient(null);
+    }
+  };
+
+  return (
+    <div style={{
+      padding:20,
+      background: ritual ? "black" : "#111",
+      color: ritual ? "#c084fc" : "white",
+      minHeight:"100vh"
+    }}>
+
+      <h1>Qabalistic Tree Premium</h1>
+
+      <div style={{marginBottom:10}}>
+        <button onClick={()=>setRitual(!ritual)}>
+          {ritual ? "Disable Ritual Mode" : "Enable Ritual Mode"}
+        </button>
+        <button onClick={startAmbient}>Ambient</button>
+        <button onClick={stopAmbient}>Stop</button>
+      </div>
+
+      <div style={{display:"flex", gap:10, flexWrap:"wrap"}}>
+        {PATHS.map(p=>(
+          <button key={p.id} onClick={()=>{
+            setSelected(p);
+            setTime(0);
+            setRunning(false);
+          }}>
+            {p.name}
+          </button>
+        ))}
+      </div>
+
+      {selected && (
+        <div style={{marginTop:20}}>
+          <h2>{selected.name}</h2>
+          <p style={{maxWidth:400}}>{selected.text}</p>
+
+          <button onClick={()=>setRunning(!running)}>
+            {running ? "Stop" : "Meditate"}
+          </button>
+
+          <button onClick={()=>speak(selected.text)}>
+            🔊 Voice
+          </button>
+
+          <div style={{marginTop:10}}>Time: {time}s</div>
+        </div>
+      )}
+
+    </div>
+  );
+}
